@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+debug 是否打印logback自身运行时的信息，通常是不需要的，所以要设置为false。
+scan 配置文件发生改变是否自动加载。
+scanPeriod 检测配置文件的时间间隔，默认为1 minute，默认单位为second。
+xsd备份地址：http://static.harmonytqs.top/source/logback.xsd，防止别人的被墙了无法加载。
+-->
+<configuration
+        xmlns="http://ch.qos.logback/xml/ns/logback"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback https://raw.githubusercontent.com/enricopulatzo/logback-XSD/master/src/main/xsd/logback.xsd"
+        debug="false"
+        scan="true"
+        scanPeriod="2 minute">
+
+    <!--定义日志输出位置-->
+    <property name="log.filepath" value="D:/lzktestworkspace/javaspace/lzktest-log/log"/>
+
+    <!--定义日志展示格式
+        %d{yyyy-MM-dd HH-mm-ss} 日期时间
+        [%thread] 线程名称
+        %-5level 格式化占位5个，打印日志级别，因为要保持缩进。
+        %logger{100} 打印是在哪个类（全类名）里面记录的日志，{100}表示打印类名的长度最大为100
+        %msg 日志信息
+        %n 换行-->
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH-mm-ss} [%thread] %-5level %logger{100} %msg%n"/>
+
+    <!--控制台日志-->
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--日志输出格式-->
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!--不同级别的日志的输出媒介
+        级别：trace < debug < info < warn < error
+        一般只需记录debug、info、error三个级别的日志，且需放在不同的文件中。-->
+
+    <!--debug日志
+        RollingFileAppender：滚动日志，可以按天、按月生成日志文件-->
+    <appender name="debugAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--文件路径-->
+        <file>${log.filepath}/debug.log</file>
+        <!--定义滚动策略
+            TimeBasedRollingPolicy：基于时间的滚动策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--设置每分钟生成文件，{yyyy-MM-dd_HH-mm}写到哪一级就按哪一级精确生成日志文件。
+            例如：每天生成一个日志文件就应该写成 {yyyy-MM-dd}
+            如果文件名以.gz结尾，logback为自动压缩日志文件，不需要压缩的话不写即可。-->
+            <fileNamePattern>${log.filepath}/debug-%d{yyyy-MM-dd_HH-mm}.log.gz</fileNamePattern>
+            <!--设置保存日志文件的最大数量-->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <!--日志格式-->
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+
+        <!--过滤器：过滤指定级别的日志-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <!--如果是debug级别的日志，记录-->
+            <onMatch>ACCEPT</onMatch>
+            <!--如果不是debug级别的日志，忽略-->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--info日志-->
+    <appender name="infoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.filepath}/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.filepath}/info-%d{yyyy-MM-dd_HH-mm}.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--error日志-->
+    <appender name="errorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.filepath}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.filepath}/error-%d{yyyy-MM-dd_HH-mm}.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--根日志记录器，所有包下面的日志都会别记录-->
+    <root level="INFO">
+        <appender-ref ref="consoleAppender"/>
+    </root>
+
+    <!--配置记录日志的包，只有该包下面的类的日志才会别记录。
+        level="DEBUG"指定日志记录的级别，不指定将自动继承根日志记录器。-->
+    <logger name="top.harmonytqs" level="DEBUG">
+        <appender-ref ref="debugAppender"/>
+        <appender-ref ref="infoAppender"/>
+        <appender-ref ref="errorAppender"/>
+    </logger>
+
+</configuration>
