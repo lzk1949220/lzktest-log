@@ -10,7 +10,7 @@ public class CommonsLogger {
 	public static void main(String[] args) {
 		logger.debug("DEBUG ...");
 		logger.info("INFO ...");
-		logger.error("ERROR ...。。");
+		logger.error("ERROR ..");
 
 	}
 
